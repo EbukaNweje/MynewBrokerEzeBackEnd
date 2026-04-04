@@ -15,10 +15,10 @@ Routers.route("/alluserdata").get(UserData.allUserData);
 Routers.route("/lastDeposit/:id").patch(UserData.updateLastDepo);
 Routers.route("/lastWithdrawal/:id").patch(UserData.updateLastWithdrawal);
 Routers.route("/depositWalletbalance/:id").patch(
-  UserData.updateDepositWalletBalance
+  UserData.updateDepositWalletBalance,
 );
 Routers.route("/interestWalletbalance/:id").patch(
-  UserData.updateInterestWalletbalance
+  UserData.updateInterestWalletbalance,
 );
 Routers.route("/totalDeposit/:id").patch(UserData.updateTotalDeposit);
 Routers.route("/totalInvest/:id").patch(UserData.updateTotalInvest);
@@ -28,8 +28,8 @@ Routers.route("/startUpDeposit/:id").patch(UserData.updateStartUpDeposit);
 Routers.route("/totalEarned/:id").patch(UserData.updateTotalEarned);
 Routers.route("/ref/:id").patch(UserData.updateRef);
 Routers.route("/contact").post(ContactsData.CreateContact);
-Routers.route("/getalldeposit").get(UserData.getUserDeposits);
-Routers.route("/getallwithdrawal").get(UserData.getUserWithdrawals);
+Routers.route("/getalldeposit/:userId").get(UserData.getUserDeposits);
+Routers.route("/getallwithdrawal/:userId").get(UserData.getUserWithdrawals);
 Routers.route("/getallinvestment/:userId").get(UserData.getUserInvestments);
 Routers.route("/getallinterest/:userId").get(UserData.getUserInterests);
 Routers.route("/getalltransactions/:id").get(UserData.getAllTransactions);
