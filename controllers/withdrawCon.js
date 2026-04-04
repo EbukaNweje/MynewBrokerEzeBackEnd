@@ -6,6 +6,9 @@ const withdrawModel = require("../models/withdrawModel");
 require("dotenv").config();
 // const axios = require('axios');
 
+const VALID_COINS = ["BTC", "ETH", "XRP", "TRX"];
+const VALID_METHODS = ["CRYPTO WALLET", "CASH APP", "PAYPAL", "BANK TRANSFER"];
+
 // withdraw function
 exports.withdraw = async (req, res) => {
   try {
@@ -14,88 +17,94 @@ exports.withdraw = async (req, res) => {
 
     // Find the withdrawer
     const withdrawer = await userModel.findById(id);
+    if (!withdrawer) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
     // Get the details for transaction
-    const { amount, coin, walletAddress } = req.body;
+    const {
+      amount,
+      coin,
+      walletAddress,
+      method,
+      cashAppTag,
+      paypalEmail,
+      bankDetails,
+    } = req.body;
     const newAmount = Number(amount);
 
     // Check if the amount is within the allowed range
-    if (newAmount <= 0 || newAmount > 9999999 || newAmount === NaN) {
+    if (isNaN(newAmount) || newAmount <= 0 || newAmount > 9999999) {
       return res.status(400).json({
         message: "You can only withdraw between 0 and 9,999,999",
       });
     }
 
-    if (coin != "BTC" && coin != "ETH") {
-      return res.status(404).json({
-        message: `Coin not available`,
+    // Determine withdrawal method and address
+    let withdrawalMethod = method || "CRYPTO WALLET";
+    let withdrawalAddress;
+
+    if (withdrawalMethod === "CRYPTO WALLET") {
+      if (!VALID_COINS.includes(coin)) {
+        return res.status(400).json({
+          message: `Coin not available. Choose from: ${VALID_COINS.join(", ")}`,
+        });
+      }
+      if (!walletAddress) {
+        return res.status(400).json({ message: "Wallet address is required" });
+      }
+      withdrawalAddress = walletAddress;
+    } else if (withdrawalMethod === "CASH APP") {
+      if (!cashAppTag)
+        return res.status(400).json({ message: "Cash App tag is required" });
+      withdrawalAddress = cashAppTag;
+    } else if (withdrawalMethod === "PAYPAL") {
+      if (!paypalEmail)
+        return res.status(400).json({ message: "PayPal email is required" });
+      withdrawalAddress = paypalEmail;
+    } else if (withdrawalMethod === "BANK TRANSFER") {
+      if (!bankDetails)
+        return res.status(400).json({ message: "Bank details are required" });
+      withdrawalAddress = bankDetails;
+    } else {
+      return res.status(400).json({
+        message: `Invalid method. Choose from: ${VALID_METHODS.join(", ")}`,
       });
     }
-
-    // Perform the currency conversion
-    // let response;
-    // let roundedNumber;
-
-    // if (coin == "BTC") {
-    //     response = await axios.get(`https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&precision=5`);
-    //     const conversionRates = response.data.bitcoin.usd;
-    //     const myTotal = Number(conversionRates);
-    //     const btcAmount = newAmount / myTotal;
-    //     roundedNumber = btcAmount.toFixed(9);
-    // } else if (coin == "ETH") {
-    //     response = await axios.get(`https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd&precision=5`);
-    //     const conversionRates = response.data.ethereum.usd;
-    //     const myTotal = Number(conversionRates);
-    //     const btcAmount = newAmount / myTotal;
-    //     roundedNumber = btcAmount.toFixed(9);
-    // }
-
-    const Depo = await withdrawModel.find();
 
     // Save the withdraw details
     const withdraw = new withdrawModel({
       user: withdrawer._id,
-      amount: `${newAmount}`,
-      coin: coin,
-      walletAddress,
-      // total: roundedNumber,
+      amount: newAmount,
+      coin: withdrawalMethod === "CRYPTO WALLET" ? coin : withdrawalMethod,
+      walletAddress: withdrawalAddress,
       status: "pending",
-      transactionType: Depo.transactionType,
     });
     await withdraw.save();
 
-    withdraw.user = id;
-    // Save the transfer id to the user
+    // Save the withdrawal id to the user
     withdrawer.Transactions.withdrawals.push(withdraw._id);
     await withdrawer.save();
 
-    if (withdraw.status === "pending") {
-      return res.status(200).json({
-        message: `withdraw made and pending`,
-      });
-    }
-    if (withdraw.status === "confirmed") {
-      // Add the withdrew amount to the user's account balance
-      withdrawer.accountBalance += newAmount;
-    }
-
-    // Create a transaction history for the withdrawer and save
+    // Create a transaction history
     const History = new historyModel({
-      id: withdrawer._id,
-      transactionType: withdraw.transactionType,
-      amount: `${newAmount}`,
+      userId: withdrawer._id,
+      transactionType: "Withdraw",
+      amount: newAmount,
     });
     await History.save();
 
-    // Create a notification message for the withdrawer and save
-    if (withdraw) {
-      const msg = `Hi ${withdrawer.fullName}, you just withdrew ${newAmount} to your balance in ${coin}`;
-      const message = new msgModel({
-        userId: withdrawer._id,
-        msg,
-      });
-      await message.save();
-    }
+    // Create a notification message
+    const msg = `Hi ${withdrawer.fullName}, you just requested a withdrawal of $${newAmount} via ${withdrawalMethod}`;
+    const message = new msgModel({
+      userId: withdrawer._id,
+      msg,
+    });
+    await message.save();
+
+    return res.status(200).json({
+      message: "Withdrawal request submitted and pending",
+    });
   } catch (err) {
     res.status(500).json({
       message: err.message,
