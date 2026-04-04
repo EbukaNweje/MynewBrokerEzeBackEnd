@@ -6,7 +6,7 @@ exports.getNotification = async (req, res) => {
     const { id } = req.params;
 
     // find the history by the user's id
-    const notify = await msgModel.findById({ id });
+    const notify = await msgModel.findById(id);
     if (!notify) {
       return res.status(404).json({
         message: "No available notification",
