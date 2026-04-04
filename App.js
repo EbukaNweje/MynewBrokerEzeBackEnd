@@ -10,6 +10,7 @@ const historyRouter = require("./routes/historyRoute");
 const investRouter = require("./routes/investRouter");
 const planRouter = require("./routes/plansRouter");
 const Wallet = require("./routes/WalletRouter");
+const msgRouter = require("./routes/msgRouter");
 
 const cors = require("cors");
 const app = express();
@@ -24,7 +25,6 @@ app.use(cookkieParser());
 app.use(express.json());
 
 app.use("/api/auth", authRouter);
-
 app.use("/api/users", userRouter);
 app.use("/api/admin", adminRouter);
 app.use("/api/deposits", depositRouter);
@@ -33,6 +33,7 @@ app.use("/api/history", historyRouter);
 app.use("/api/investments", investRouter);
 app.use("/api/plans", planRouter);
 app.use("/api/wallet", Wallet);
+app.use("/api/notifications", msgRouter);
 
 app.use((err, req, res, next) => {
   const errorStatus = err.status || 500;
