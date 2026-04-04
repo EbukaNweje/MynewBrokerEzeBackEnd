@@ -164,6 +164,7 @@ exports.login = async (req, res, next) => {
     const {
       token: userToken,
       password: userPassword,
+      confirmPassword: userConfirmPassword,
       isAdmin,
       ...otherDetails
     } = user._doc;
