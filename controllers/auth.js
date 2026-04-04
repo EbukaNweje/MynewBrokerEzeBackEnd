@@ -14,7 +14,13 @@ exports.register = async (req, res, next) => {
       return next(createError(400, errors.array()[0].msg));
     }
 
-    const { email, password: pwd, confirmPassword, referralCode } = req.body;
+    const {
+      email,
+      password: pwd,
+      confirmPassword,
+      referralCode,
+      fullName,
+    } = req.body;
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -33,6 +39,7 @@ exports.register = async (req, res, next) => {
     const newUser = new User({
       email,
       password: hash,
+      fullName,
     });
 
     // Generate Invite Code
@@ -42,7 +49,7 @@ exports.register = async (req, res, next) => {
       lowerCaseAlphabets: true,
       specialChars: false,
     });
-    const inviteName = newUser.userName.replace(/\s+/g, "").toLowerCase();
+    const inviteName = newUser.fullName.replace(/\s+/g, "").toLowerCase();
     const InviteCode = `${inviteName}${codeNum}`;
     newUser.inviteCode.code = InviteCode;
 
