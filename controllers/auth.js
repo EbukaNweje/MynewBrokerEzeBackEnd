@@ -5,7 +5,11 @@ const jwt = require("jsonwebtoken");
 const { validationResult } = require("express-validator");
 const otpGenerator = require("otp-generator");
 // const transporter = require("../utilities/email");
-const { registerEmail, referrial } = require("../middleware/emailTemplate");
+const {
+  registerEmail,
+  referrial,
+  loginEmail,
+} = require("../middleware/emailTemplate");
 const { sendEmail } = require("../utilities/brevo");
 
 exports.register = async (req, res, next) => {
@@ -114,6 +118,60 @@ exports.register = async (req, res, next) => {
         user: userData,
         referralLink,
       },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.login = async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) {
+      return next(createError(404, "User not found!"));
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return next(createError(400, "Wrong password or username"));
+    }
+
+    if (user.status === "blocked") {
+      return next(createError(403, "Your account has been suspended"));
+    }
+
+    user.isLogin = "active";
+
+    const token = jwt.sign(
+      { id: user._id, isAdmin: user.isAdmin },
+      process.env.JWT,
+      { expiresIn: "1d" },
+    );
+    user.token = token;
+
+    // Generate Referral Link
+    const referralLink = `http://localhost:5173/auth/Sign-up?referralCode=${user.inviteCode.code}`;
+
+    await user.save();
+    const emailDetails = {
+      email: user.email,
+      subject: "Recent Login Activity",
+      html: loginEmail(user),
+    };
+    sendEmail(emailDetails);
+
+    const {
+      token: userToken,
+      password: userPassword,
+      isAdmin,
+      ...otherDetails
+    } = user._doc;
+
+    res.status(200).json({
+      ...otherDetails,
+      referralLink,
+      token,
     });
   } catch (error) {
     next(error);
@@ -325,34 +383,6 @@ exports.userverifySuccessful = async (req, res, next) => {
       message: "verify Successful.",
       data: UpdateUser,
     });
-  } catch (err) {
-    next(err);
-  }
-};
-
-exports.login = async (req, res, next) => {
-  try {
-    const Users = await User.findOne({ email: req.body.email });
-    if (!Users) return next(createError(404, "User not found!"));
-
-    const isPasswordCorrect = await bcrypt.compare(
-      req.body.password,
-      Users.password,
-    );
-    if (!isPasswordCorrect)
-      return next(createError(400, "Wrong password or username"));
-
-    const token1 = jwt.sign(
-      { id: Users._id, isAdmin: Users.isAdmin },
-      process.env.JWT,
-      { expiresIn: "1d" },
-    );
-    Users.token = token1;
-    await Users.save();
-
-    const { token, password, isAdmin, ...otherDetails } = Users._doc;
-
-    res.status(200).json({ ...otherDetails });
   } catch (err) {
     next(err);
   }

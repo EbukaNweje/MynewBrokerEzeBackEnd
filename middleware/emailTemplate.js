@@ -150,7 +150,7 @@ exports.registerEmail = (userData) => {
 exports.loginEmail = (userData) => {
   const mainContent = `
     <h1 style="font-size: 24px; color: #002611; margin-bottom: 20px;">Recent Login Activity</h1>
-    <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Hi ${userData.userName},</p>
+    <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Hi ${userData.fullName},</p>
     <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
       You’ve logged into your Asset Development account. If this wasn’t you, secure your account immediately.
     </p>
