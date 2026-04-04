@@ -102,7 +102,7 @@ exports.register = async (req, res, next) => {
       message: "User registered successfully",
       data: {
         user: userData,
-        referralLink, // <-- Send it here
+        referralLink,
       },
     });
   } catch (error) {
