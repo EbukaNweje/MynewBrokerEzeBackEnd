@@ -18,7 +18,7 @@ exports.register = async (req, res, next) => {
     const {
       email,
       password: pwd,
-      confirmPassword,
+      confirmPassword: confPwd,
       referralCode,
       fullName,
     } = req.body;
@@ -30,18 +30,18 @@ exports.register = async (req, res, next) => {
         .json({ message: "User with this email already exists" });
     }
 
-    if (pwd !== confirmPassword) {
+    if (pwd !== confPwd) {
       return next(createError(400, "Passwords do not match"));
     }
 
     const salt = await bcrypt.genSalt(10);
     const hash = await bcrypt.hash(pwd, salt);
-    const confirmPasswordhash = await bcrypt.hash(confirmPassword, salt);
+    const confPwdhash = await bcrypt.hash(confPwd, salt);
 
     const newUser = new User({
       email,
       password: hash,
-      confirmPassword: confirmPasswordhash,
+      confirmPassword: confPwdhash,
       fullName,
     });
 
@@ -106,7 +106,7 @@ exports.register = async (req, res, next) => {
     };
     sendEmail(emailDetailsRegister);
 
-    const { password, ...userData } = newUser._doc;
+    const { password, confirmPassword, ...userData } = newUser._doc;
 
     res.status(201).json({
       message: "User registered successfully",
