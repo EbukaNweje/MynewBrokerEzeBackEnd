@@ -125,7 +125,7 @@ const baseEmailTemplate = (title, mainContent, accentColor = PRIMARY_BLUE) => {
 exports.referrial = (referrer) => {
   const mainContent = `
     <h1 style="font-size: 24px; color: #002611; margin-bottom: 20px;">You've Got A New Referral</h1>
-    <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Hi ${referrer.userName},</p>
+    <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Hi ${referrer.fullName},</p>
     <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
       A new user joined Asset Development using your referral link. Thank you for growing our community!
     </p>

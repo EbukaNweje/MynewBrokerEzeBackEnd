@@ -5,8 +5,8 @@ const jwt = require("jsonwebtoken");
 const { validationResult } = require("express-validator");
 const otpGenerator = require("otp-generator");
 // const transporter = require("../utilities/email");
-const sendEmail = require("../utilities/email");
-const { registerEmail } = require("../middleware/emailTemplate");
+const { registerEmail, referrial } = require("../middleware/emailTemplate");
+const { sendEmail } = require("../utilities/brevo");
 
 exports.register = async (req, res, next) => {
   try {
