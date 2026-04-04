@@ -36,11 +36,12 @@ exports.register = async (req, res, next) => {
 
     const salt = await bcrypt.genSalt(10);
     const hash = await bcrypt.hash(pwd, salt);
+    const confirmPasswordhash = await bcrypt.hash(confirmPassword, salt);
 
     const newUser = new User({
       email,
       password: hash,
-      confirmPassword: pwd,
+      confirmPassword: confirmPasswordhash,
       fullName,
     });
 
