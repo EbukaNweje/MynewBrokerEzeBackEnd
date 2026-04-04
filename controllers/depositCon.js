@@ -31,44 +31,76 @@ exports.deposit = async (req, res) => {
     if (!Number.isFinite(newAmount) || newAmount <= 0 || newAmount > 9999999) {
       return res.status(400).json({
         message:
-          "You can only deposit a positive number between 0 and 9,999,999",
+          "You can only deposit a positive number between 10 and 9,999,999",
       });
     }
 
-    if (!["BTC", "ETH"].includes(coin)) {
+    if (!coin) {
       return res.status(400).json({
-        message: "Coin not available; choose BTC or ETH",
+        message: "Payment method is required",
       });
     }
 
-    // Fetch conversion USD to crypto with rate-limit handling
-    const getConversionPrice = async (coinType) => {
-      const coinId = coinType === "BTC" ? "bitcoin" : "ethereum";
-      const url = `https://api.coingecko.com/api/v3/simple/price?ids=${coinId}&vs_currencies=usd&precision=5`;
-
-      const maxRetries = 3;
-      for (let attempt = 1; attempt <= maxRetries; attempt += 1) {
-        try {
-          const response = await axios.get(url);
-          const rate = response.data[coinId]?.usd;
-          if (!rate || !Number.isFinite(rate)) {
-            throw new Error("Invalid conversion rate");
-          }
-          return Number(rate);
-        } catch (err) {
-          if (err.response && err.response.status === 429) {
-            if (attempt === maxRetries) throw err;
-            await new Promise((resolve) => setTimeout(resolve, 300 * attempt));
-            continue;
-          }
-          throw err;
-        }
+    const extractCoinSymbol = (value) => {
+      if (!value || typeof value !== "string") return "";
+      const upper = value.toUpperCase();
+      const bracketMatch = upper.match(/\(([^)]+)\)/);
+      if (bracketMatch && bracketMatch[1]) {
+        return bracketMatch[1].trim();
       }
-      throw new Error("Conversion API rate limit triggered");
+      return upper.trim();
     };
 
-    const rate = await getConversionPrice(coin);
-    const cryptoAmount = Number((newAmount / rate).toFixed(9));
+    const coinSymbol = extractCoinSymbol(coin);
+    const cryptoCoinMap = {
+      BTC: "bitcoin",
+      ETH: "ethereum",
+      USDT: "tether",
+      BNB: "binancecoin",
+      SOL: "solana",
+      XRP: "ripple",
+      TRX: "tron",
+    };
+
+    const matchedEntry = Object.entries(cryptoCoinMap).find(
+      ([symbol, name]) =>
+        coinSymbol === symbol ||
+        coinSymbol.includes(symbol) ||
+        coinSymbol.includes(name.toUpperCase()),
+    );
+
+    let cryptoAmount = newAmount;
+    if (matchedEntry) {
+      const coinId = matchedEntry[1];
+      const getConversionPrice = async (coinId) => {
+        const url = `https://api.coingecko.com/api/v3/simple/price?ids=${coinId}&vs_currencies=usd&precision=5`;
+
+        const maxRetries = 3;
+        for (let attempt = 1; attempt <= maxRetries; attempt += 1) {
+          try {
+            const response = await axios.get(url);
+            const rate = response.data[coinId]?.usd;
+            if (!rate || !Number.isFinite(rate)) {
+              throw new Error("Invalid conversion rate");
+            }
+            return Number(rate);
+          } catch (err) {
+            if (err.response && err.response.status === 429) {
+              if (attempt === maxRetries) throw err;
+              await new Promise((resolve) =>
+                setTimeout(resolve, 300 * attempt),
+              );
+              continue;
+            }
+            throw err;
+          }
+        }
+        throw new Error("Conversion API rate limit triggered");
+      };
+
+      const rate = await getConversionPrice(coinId);
+      cryptoAmount = Number((newAmount / rate).toFixed(9));
+    }
 
     // Save the deposit details
     const deposit = new depositModel({
@@ -114,12 +146,10 @@ exports.deposit = async (req, res) => {
     });
   } catch (err) {
     if (err.response && err.response.status === 429) {
-      return res
-        .status(429)
-        .json({
-          message:
-            "External rate API limit exceeded; please retry in a few seconds",
-        });
+      return res.status(429).json({
+        message:
+          "External rate API limit exceeded; please retry in a few seconds",
+      });
     }
 
     console.error("Deposit error:", err);
