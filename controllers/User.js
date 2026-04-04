@@ -4,9 +4,15 @@ const investModel = require("../models/investModel");
 exports.getoneUser = async (req, res, next) => {
   try {
     const userId = req.params.userId;
-    const UserData = await User.findById(userId).populate(
-      "Transactions.investments"
-    );
+    const UserData = await User.findById(userId).populate([
+      "Transactions.deposits",
+      "Transactions.withdrawals",
+      "Transactions.investments",
+      "Transactions.interests",
+      "investmentPlan",
+      "inviteCode.userInvited",
+    ]);
+
     if (UserData.accountBalance > 0) {
       let newDay = UserData.newDay;
       const setter = setInterval(() => {
@@ -90,7 +96,7 @@ exports.updateLastDepo = async (req, res, next) => {
         { lastDeposit: lastDeposit },
         {
           new: true,
-        }
+        },
       );
       res.status(201).json({
         message: "Updated successfully",
@@ -115,7 +121,7 @@ exports.updateRef = async (req, res, next) => {
         { ref: ref },
         {
           new: true,
-        }
+        },
       );
       res.status(201).json({
         message: "Updated successfully",
@@ -140,7 +146,7 @@ exports.updateLastWithdrawal = async (req, res, next) => {
         { lastWithdrawal: lastWithdrawal },
         {
           new: true,
-        }
+        },
       );
       res.status(201).json({
         message: "Updated successfully",
@@ -166,7 +172,7 @@ exports.updateDepositWalletBalance = async (req, res, next) => {
         { depositWalletbalance: depositWalletbalance },
         {
           new: true,
-        }
+        },
       );
       res.status(201).json({
         message: "Updated successfully",
@@ -192,7 +198,7 @@ exports.updateInterestWalletbalance = async (req, res, next) => {
         { interestWalletbalance: interestWalletbalance },
         {
           new: true,
-        }
+        },
       );
       res.status(201).json({
         message: "Updated successfully",
@@ -218,7 +224,7 @@ exports.updateAccountBalance = async (req, res, next) => {
         { currentBalance: currentBalance },
         {
           new: true,
-        }
+        },
       );
       res.status(201).json({
         message: "Updated successfully",
@@ -244,7 +250,7 @@ exports.updateTotalDeposit = async (req, res, next) => {
         { totalDeposit: totalDeposit },
         {
           new: true,
-        }
+        },
       );
       res.status(201).json({
         message: "Updated successfully",
@@ -270,7 +276,7 @@ exports.updateTotalInvest = async (req, res, next) => {
         { totalInvest: totalInvest },
         {
           new: true,
-        }
+        },
       );
       res.status(201).json({
         message: "Updated successfully",
@@ -296,7 +302,7 @@ exports.updateTotalWithdraw = async (req, res, next) => {
         { totalWithdraw: totalWithdraw },
         {
           new: true,
-        }
+        },
       );
       res.status(201).json({
         message: "Updated successfully",
@@ -322,7 +328,7 @@ exports.updateStartUpDeposit = async (req, res, next) => {
         { startUpDeposit: startUpDeposit },
         {
           new: true,
-        }
+        },
       );
       res.status(201).json({
         message: "Updated successfully",
@@ -347,7 +353,7 @@ exports.updateTotalEarned = async (req, res, next) => {
         { totalEarned: totalEarned },
         {
           new: true,
-        }
+        },
       );
       res.status(201).json({
         message: "Updated successfully",
@@ -383,7 +389,7 @@ exports.getUserInvestments = async (req, res) => {
   try {
     const { userId } = req.params;
     const user = await User.findById(userId).populate(
-      "Transactions.investments"
+      "Transactions.investments",
     );
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -425,7 +431,7 @@ exports.getUserWithdrawals = async (req, res) => {
   try {
     const { userId } = req.params;
     const user = await User.findById(userId).populate(
-      "Transactions.withdrawals"
+      "Transactions.withdrawals",
     );
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -451,7 +457,7 @@ exports.getAllTransactions = async (req, res) => {
     // Fetch user with populated transactions
     const user = await User.findById(id)
       .populate(
-        "Transactions.deposits Transactions.withdrawals Transactions.investments Transactions.interests"
+        "Transactions.deposits Transactions.withdrawals Transactions.investments Transactions.interests",
       )
       .exec();
 
