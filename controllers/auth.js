@@ -39,6 +39,7 @@ exports.register = async (req, res, next) => {
     const newUser = new User({
       email,
       password: hash,
+      confirmPassword: pwd,
       fullName,
     });
 
