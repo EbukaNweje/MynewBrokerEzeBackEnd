@@ -101,7 +101,7 @@ exports.register = async (req, res, next) => {
     await newUser.save();
 
     // Generate Referral Link
-    const referralLink = `http://localhost:5173/auth/Sign-up?referralCode=${newUser.inviteCode.code}`;
+    const referralLink = `https://assetdevelopment.vercel.app/register?referralCode=${newUser.inviteCode.code}`;
 
     const emailDetailsRegister = {
       email: newUser.email,
@@ -151,7 +151,7 @@ exports.login = async (req, res, next) => {
     user.token = token;
 
     // Generate Referral Link
-    const referralLink = `http://localhost:5173/auth/Sign-up?referralCode=${user.inviteCode.code}`;
+    const referralLink = `https://assetdevelopment.vercel.app/register?referralCode=${user.inviteCode.code}`;
 
     await user.save();
     const emailDetails = {
