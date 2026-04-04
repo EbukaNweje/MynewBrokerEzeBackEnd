@@ -135,7 +135,7 @@ exports.deposit = async (req, res) => {
     // Create a notification message
     const messageText = `Hi ${depositor.fullName}, you just deposited ${newAmount} USD (~${cryptoAmount} ${coin})`;
     const message = new msgModel({
-      id: depositor._id,
+      userId: depositor._id,
       msg: messageText,
     });
     await message.save();
