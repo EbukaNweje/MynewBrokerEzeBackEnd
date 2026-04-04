@@ -241,12 +241,17 @@ exports.pinChangedEmail = (userData) => {
   return baseEmailTemplate("PIN Change Confirmation", mainContent);
 };
 
-exports.RequestDEmail = (user) => {
+exports.RequestDEmail = (user, deposit) => {
+  const displayName = user.userName || user.fullName || "Valued User";
   const mainContent = `
     <h1 style="font-size: 24px; color: #002611; margin-bottom: 20px;">Deposit Request Initiated</h1>
-    <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Hello ${user.userName},</p>
+    <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Hello ${displayName},</p>
+    <p style="font-size: 16px; margin-bottom: 15px; color: #333;">
+      We have received your deposit request of <strong>$${deposit.amount}</strong>.
+    </p>
     <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
-         You have initiated a deposit request. Your deposit will reflect after being processed successfully.
+      Payment Method: <strong>${deposit.paymentMethod || "Not specified"}</strong>.
+      Our team will review and process this deposit shortly.
     </p>
     <p style="font-size: 16px; margin-top: 20px; color: #333;">Regards,</p>
     <p style="font-size: 16px; font-weight: 600; color: ${PRIMARY_BLUE}; margin: 0;">Asset Development Team.</p>

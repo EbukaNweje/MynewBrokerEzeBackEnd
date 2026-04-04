@@ -9,6 +9,7 @@ const {
   registerEmail,
   referrial,
   loginEmail,
+  RequestDEmail,
 } = require("../middleware/emailTemplate");
 const { sendEmail } = require("../utilities/brevo");
 
@@ -665,35 +666,40 @@ exports.forgotPassword = async (req, res, next) => {
 exports.sendPaymentInfo = async (req, res, next) => {
   try {
     const id = req.params.id;
-    const amount = req.body.amount;
+    const { amount, paymentMethod } = req.body;
     const userInfo = await User.findById(id);
 
-    const mailOptions = {
-      from: process.env.USER,
-      to: process.env.USER,
-      subject: "Successful Deposit",
-      html: `
-   <p>
-    Name of client:  ${userInfo.fullName} <br>
-    Email of client:  ${userInfo.email}  <br>
-     Client Amount: $${amount} <br>
-        Just Made a deposit now on your Platfrom 
-   </p>
-    `,
+    if (!userInfo) {
+      return next(createError(404, "User not found"));
+    }
+
+    const userEmailOptions = {
+      email: userInfo.email,
+      subject: "Deposit Request Received",
+      html: RequestDEmail(userInfo, {
+        amount,
+        paymentMethod,
+      }),
     };
 
-    // transporter.sendMail(mailOptions, (err, info) => {
-    //   if (err) {
-    //     console.log("erro", err.message);
-    //   } else {
-    //     console.log("Email has been sent to your inbox", info.response);
-    //   }
-    // });
-    sendEmail(mailOptions);
+    const adminEmailOptions = {
+      email: process.env.USER,
+      subject: "New Deposit Request",
+      html: `
+        <h1>New Deposit Request</h1>
+        <p><strong>Name:</strong> ${userInfo.fullName}</p>
+        <p><strong>Email:</strong> ${userInfo.email}</p>
+        <p><strong>Amount:</strong> $${amount}</p>
+        <p><strong>Payment Method:</strong> ${paymentMethod || "Not specified"}</p>
+      `,
+    };
+
+    await sendEmail(userEmailOptions);
+    await sendEmail(adminEmailOptions);
 
     res.status(200).json({
       status: "success",
-      message: "Payment has been sent",
+      message: "Deposit notification emails sent",
     });
   } catch (err) {
     next(err);
