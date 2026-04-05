@@ -41,7 +41,13 @@ exports.withdraw = async (req, res) => {
     }
 
     // Determine withdrawal method and address
-    let withdrawalMethod = method || "CRYPTO WALLET";
+    let withdrawalMethod = method;
+    if (!withdrawalMethod) {
+      if (cashAppTag) withdrawalMethod = "CASH APP";
+      else if (paypalEmail) withdrawalMethod = "PAYPAL";
+      else if (bankDetails) withdrawalMethod = "BANK TRANSFER";
+      else withdrawalMethod = "CRYPTO WALLET";
+    }
     let withdrawalAddress;
 
     if (withdrawalMethod === "CRYPTO WALLET") {
