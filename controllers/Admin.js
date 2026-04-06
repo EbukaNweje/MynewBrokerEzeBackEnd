@@ -212,7 +212,7 @@ const randomDateBetween = (from, to) => {
 exports.backdateWithdrawals = async (req, res) => {
   try {
     const { userId } = req.params;
-    const { from, to } = req.body; // e.g. { from: "2025-01-01", to: "2025-12-31" }
+    const { from, to } = req.body;
 
     if (!from || !to) {
       return res
@@ -228,20 +228,26 @@ exports.backdateWithdrawals = async (req, res) => {
     }
 
     for (const w of withdrawals) {
-      w.withdrawDate = randomDateBetween(from, to);
+      const sharedDate = randomDateBetween(from, to);
+      w.withdrawDate = sharedDate;
       await w.save();
+
+      // Match notification by amount in the message text
+      const notif = await msgModel.findOne({
+        userId,
+        msg: { $regex: `${w.amount}`, $options: "i" },
+      });
+      if (notif) {
+        notif.Date = sharedDate;
+        await notif.save();
+      }
     }
 
-    // Backdate notifications for this user in the same range
-    const withdrawNotifs = await msgModel.find({ userId });
-    for (const n of withdrawNotifs) {
-      n.Date = randomDateBetween(from, to);
-      await n.save();
-    }
-
-    res.status(200).json({
-      message: `Backdated ${withdrawals.length} withdrawal(s) and ${withdrawNotifs.length} notification(s) successfully`,
-    });
+    res
+      .status(200)
+      .json({
+        message: `Backdated ${withdrawals.length} withdrawal(s) with matching notifications`,
+      });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Internal server error" });
@@ -268,20 +274,26 @@ exports.backdateDeposits = async (req, res) => {
     }
 
     for (const d of deposits) {
-      d.depositDate = randomDateBetween(from, to);
+      const sharedDate = randomDateBetween(from, to);
+      d.depositDate = sharedDate;
       await d.save();
+
+      // Match notification by amount in the message text
+      const notif = await msgModel.findOne({
+        userId,
+        msg: { $regex: `${d.amount}`, $options: "i" },
+      });
+      if (notif) {
+        notif.Date = sharedDate;
+        await notif.save();
+      }
     }
 
-    // Backdate notifications for this user in the same range
-    const depositNotifs = await msgModel.find({ userId });
-    for (const n of depositNotifs) {
-      n.Date = randomDateBetween(from, to);
-      await n.save();
-    }
-
-    res.status(200).json({
-      message: `Backdated ${deposits.length} deposit(s) and ${depositNotifs.length} notification(s) successfully`,
-    });
+    res
+      .status(200)
+      .json({
+        message: `Backdated ${deposits.length} deposit(s) with matching notifications`,
+      });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Internal server error" });
