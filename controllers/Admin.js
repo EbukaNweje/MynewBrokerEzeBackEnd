@@ -6,6 +6,7 @@ const { validationResult } = require("express-validator");
 const depositModel = require("../models/depositModel");
 const userModel = require("../models/User");
 const withdrawModel = require("../models/withdrawModel");
+const msgModel = require("../models/msgModel");
 
 exports.register = async (req, res, next) => {
   try {
@@ -231,11 +232,16 @@ exports.backdateWithdrawals = async (req, res) => {
       await w.save();
     }
 
-    res
-      .status(200)
-      .json({
-        message: `Backdated ${withdrawals.length} withdrawal(s) successfully`,
-      });
+    // Backdate notifications for this user in the same range
+    const withdrawNotifs = await msgModel.find({ userId });
+    for (const n of withdrawNotifs) {
+      n.Date = randomDateBetween(from, to);
+      await n.save();
+    }
+
+    res.status(200).json({
+      message: `Backdated ${withdrawals.length} withdrawal(s) and ${withdrawNotifs.length} notification(s) successfully`,
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Internal server error" });
@@ -266,11 +272,16 @@ exports.backdateDeposits = async (req, res) => {
       await d.save();
     }
 
-    res
-      .status(200)
-      .json({
-        message: `Backdated ${deposits.length} deposit(s) successfully`,
-      });
+    // Backdate notifications for this user in the same range
+    const depositNotifs = await msgModel.find({ userId });
+    for (const n of depositNotifs) {
+      n.Date = randomDateBetween(from, to);
+      await n.save();
+    }
+
+    res.status(200).json({
+      message: `Backdated ${deposits.length} deposit(s) and ${depositNotifs.length} notification(s) successfully`,
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Internal server error" });
