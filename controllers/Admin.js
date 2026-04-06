@@ -181,12 +181,95 @@ exports.trunOnUserNotification = async (req, res) => {
     }
     user.notification = !user.notification;
     await user.save();
+    res.status(200).json({
+      message: user.notification
+        ? "User notification truned on"
+        : "User notification truned off",
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// Helper: generate a random date string between two dates (inclusive)
+const randomDateBetween = (from, to) => {
+  const start = new Date(from).getTime();
+  const end = new Date(to).getTime();
+  const random = new Date(start + Math.random() * (end - start));
+  return random.toLocaleString("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
+// Backdate all withdrawals for a user between two dates
+exports.backdateWithdrawals = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { from, to } = req.body; // e.g. { from: "2025-01-01", to: "2025-12-31" }
+
+    if (!from || !to) {
+      return res
+        .status(400)
+        .json({ message: "Provide 'from' and 'to' dates in the request body" });
+    }
+
+    const withdrawals = await withdrawModel.find({ user: userId });
+    if (!withdrawals.length) {
+      return res
+        .status(404)
+        .json({ message: "No withdrawals found for this user" });
+    }
+
+    for (const w of withdrawals) {
+      w.withdrawDate = randomDateBetween(from, to);
+      await w.save();
+    }
+
     res
       .status(200)
       .json({
-        message: user.notification
-          ? "User notification truned on"
-          : "User notification truned off",
+        message: `Backdated ${withdrawals.length} withdrawal(s) successfully`,
+      });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// Backdate all deposits for a user between two dates
+exports.backdateDeposits = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { from, to } = req.body;
+
+    if (!from || !to) {
+      return res
+        .status(400)
+        .json({ message: "Provide 'from' and 'to' dates in the request body" });
+    }
+
+    const deposits = await depositModel.find({ user: userId });
+    if (!deposits.length) {
+      return res
+        .status(404)
+        .json({ message: "No deposits found for this user" });
+    }
+
+    for (const d of deposits) {
+      d.depositDate = randomDateBetween(from, to);
+      await d.save();
+    }
+
+    res
+      .status(200)
+      .json({
+        message: `Backdated ${deposits.length} deposit(s) successfully`,
       });
   } catch (err) {
     console.error(err);
