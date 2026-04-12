@@ -3,9 +3,8 @@ const {
   transferFunds,
   getTransferHistory,
 } = require("../controllers/transferCon");
-const authorization = require("../middleware/authorization");
 
-router.post("/send/:id", authorization, transferFunds);
-router.get("/history/:id", authorization, getTransferHistory);
+router.post("/send/:id", transferFunds);
+router.get("/history/:id", getTransferHistory);
 
 module.exports = router;
