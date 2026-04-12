@@ -25,6 +25,10 @@ const UserSchema = new mongoose.Schema(
       type: String,
     },
 
+    country: {
+      type: String,
+    },
+
     pin: {
       type: String,
       default: "",
