@@ -45,14 +45,14 @@ exports.transferFunds = async (req, res) => {
     const recipient = await userModel.findOne({
       $or: [
         { email: recipientIdentifier.toLowerCase().trim() },
-        { userName: recipientIdentifier.trim() },
+        { fullName: recipientIdentifier.trim() },
       ],
     });
 
     if (!recipient) {
       return res
         .status(404)
-        .json({ message: "Recipient not found. Check the email or username." });
+        .json({ message: "Recipient not found. Check the email or fullName." });
     }
 
     if (recipient._id.toString() === sender._id.toString()) {
