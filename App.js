@@ -11,6 +11,7 @@ const investRouter = require("./routes/investRouter");
 const planRouter = require("./routes/plansRouter");
 const Wallet = require("./routes/WalletRouter");
 const msgRouter = require("./routes/msgRouter");
+const transferRouter = require("./routes/transferRouter");
 
 const cors = require("cors");
 const app = express();
@@ -34,6 +35,7 @@ app.use("/api/investments", investRouter);
 app.use("/api/plans", planRouter);
 app.use("/api/wallet", Wallet);
 app.use("/api/notifications", msgRouter);
+app.use("/api/transfers", transferRouter);
 
 app.use((err, req, res, next) => {
   const errorStatus = err.status || 500;

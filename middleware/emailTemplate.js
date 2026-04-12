@@ -695,3 +695,52 @@ exports.adminCustomMessageEmail = (userData, customMessage) => {
     PRIMARY_BLUE,
   );
 };
+
+exports.transferSentEmail = (user, transfer) => {
+  const displayName = user.fullName || user.userName || "Valued User";
+  const mainContent = `
+    <h1 style="font-size: 24px; color: #002611; margin-bottom: 20px;">Transfer Sent Successfully</h1>
+    <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Hi ${displayName},</p>
+    <p style="font-size: 16px; margin-bottom: 15px; color: #333;">
+      Your transfer has been processed successfully. Here's a summary:
+    </p>
+    <table width="100%" cellpadding="8" cellspacing="0" style="border-collapse: collapse; margin-bottom: 20px;">
+      <tr style="border-bottom: 1px solid #eee;">
+        <td style="color: #555;">Recipient</td>
+        <td style="text-align: right; font-weight: 600; color: #002611;">${transfer.recipientName}</td>
+      </tr>
+      <tr style="border-bottom: 1px solid #eee;">
+        <td style="color: #555;">Transfer Amount</td>
+        <td style="text-align: right; font-weight: 600; color: #002611;">$${transfer.amount.toFixed(2)}</td>
+      </tr>
+      <tr style="border-bottom: 1px solid #eee;">
+        <td style="color: #555;">Transfer Charge (${0}%)</td>
+        <td style="text-align: right; color: #555;">$${transfer.charge.toFixed(2)}</td>
+      </tr>
+      <tr>
+        <td style="color: #555; font-weight: 600;">Total Deducted</td>
+        <td style="text-align: right; font-weight: 700; color: #002611;">$${transfer.totalDeducted.toFixed(2)}</td>
+      </tr>
+    </table>
+    <p style="font-size: 14px; color: #999;">Transfers are processed instantly and cannot be reversed.</p>
+    <p style="font-size: 16px; margin-top: 20px; color: #333;">Regards,</p>
+    <p style="font-size: 16px; font-weight: 600; color: #4caf50; margin: 0;">Asset Development Team.</p>
+  `;
+  return baseEmailTemplate("Transfer Sent Successfully", mainContent);
+};
+
+exports.transferReceivedEmail = (user, transfer) => {
+  const displayName = user.fullName || user.userName || "Valued User";
+  const mainContent = `
+    <h1 style="font-size: 24px; color: #002611; margin-bottom: 20px;">You've Received a Transfer</h1>
+    <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Hi ${displayName},</p>
+    <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
+      Great news! <strong>${transfer.senderName}</strong> has sent you a transfer of 
+      <strong>$${transfer.amount.toFixed(2)}</strong>. The funds have been added to your account balance.
+    </p>
+    <p style="font-size: 14px; color: #999;">Log in to your account to view your updated balance.</p>
+    <p style="font-size: 16px; margin-top: 20px; color: #333;">Regards,</p>
+    <p style="font-size: 16px; font-weight: 600; color: #4caf50; margin: 0;">Asset Development Team.</p>
+  `;
+  return baseEmailTemplate("Funds Received", mainContent);
+};
