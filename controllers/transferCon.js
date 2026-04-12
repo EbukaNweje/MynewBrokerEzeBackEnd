@@ -8,7 +8,7 @@ const {
   transferReceivedEmail,
 } = require("../middleware/emailTemplate");
 
-const TRANSFER_CHARGE_PERCENT = 0; // 0% charge as shown in UI
+const TRANSFER_CHARGE_PERCENT = 20; // 20% charge as shown in UI
 const MIN_TRANSFER = 1;
 
 exports.transferFunds = async (req, res) => {
