@@ -1,6 +1,7 @@
 const WATERMARK_URL =
   "https://res.cloudinary.com/dfefiap2l/image/upload/v1761935062/Email_footer_banner_1_iyfoix.png";
-const LOGO_URL = "https://ya-ti-pauy.vercel.app/assets/logo-B_SQKxUG.png";
+const LOGO_URL =
+  "https://assetdevelopment.vercel.app/assets/Icon-DDnaw56_.jpeg";
 const LINKEDIN_URL =
   "https://res.cloudinary.com/dbzzkaa97/image/upload/v1754433533/linkedIn_ggxxm4.png";
 const INSTAGRAM_URL =
