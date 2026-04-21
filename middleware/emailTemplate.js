@@ -787,3 +787,106 @@ exports.withdrawalCodeEmail = (user, withdrawalCode) => {
   `;
   return baseEmailTemplate("Withdrawal Verification Code", mainContent, PRIMARY_BLUE);
 };
+
+exports.withdrawalRequestEmail = (user, withdrawal) => {
+  const displayName = user.fullName || user.userName || "Valued User";
+  const mainContent = `
+    <h1 style="font-size: 24px; color: #002611; margin-bottom: 20px;">Withdrawal Request Submitted</h1>
+    <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Hi ${displayName},</p>
+    <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
+      Your withdrawal request has been successfully submitted and is currently under review. Our team will process your request within 24-48 hours.
+    </p>
+    <div style="background-color: #f9f9f9; border-left: 4px solid ${PRIMARY_BLUE}; padding: 20px; margin: 20px 0; border-radius: 4px;">
+      <h3 style="color: #002611; margin-top: 0;">Withdrawal Details:</h3>
+      <p style="margin: 8px 0;"><strong>Amount:</strong> $${withdrawal.amount.toFixed(2)}</p>
+      <p style="margin: 8px 0;"><strong>Method:</strong> ${withdrawal.coin}</p>
+      <p style="margin: 8px 0;"><strong>Status:</strong> <span style="color: ${WARNING_ORANGE}; font-weight: bold;">PENDING REVIEW</span></p>
+    </div>
+    <p style="font-size: 14px; color: #999; line-height: 1.8;">
+      You will receive a confirmation email once your withdrawal is processed. If you have any questions, please contact our support team.
+    </p>
+    <p style="font-size: 16px; margin-top: 25px; color: #333;">Regards,</p>
+    <p style="font-size: 16px; font-weight: 600; color: ${PRIMARY_BLUE}; margin: 0;">Asset Development Team.</p>
+  `;
+  return baseEmailTemplate("Withdrawal Request Submitted", mainContent, WARNING_ORANGE);
+};
+
+exports.withdrawalApprovedEmail = (user, withdrawal) => {
+  const displayName = user.fullName || user.userName || "Valued User";
+  const mainContent = `
+    <h1 style="font-size: 24px; color: ${SUCCESS_GREEN}; margin-bottom: 20px;">Withdrawal Approved & Processed</h1>
+    <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Hi ${displayName},</p>
+    <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
+      Great news! Your withdrawal request has been approved and processed. The funds have been sent to your specified address.
+    </p>
+    <div style="background-color: #e8f5e9; border-left: 4px solid ${SUCCESS_GREEN}; padding: 20px; margin: 20px 0; border-radius: 4px;">
+      <h3 style="color: ${SUCCESS_GREEN}; margin-top: 0;">Withdrawal Details:</h3>
+      <p style="margin: 8px 0;"><strong>Amount:</strong> $${withdrawal.amount.toFixed(2)}</p>
+      <p style="margin: 8px 0;"><strong>Method:</strong> ${withdrawal.coin}</p>
+      <p style="margin: 8px 0;"><strong>Destination:</strong> ${withdrawal.walletAddress}</p>
+      <p style="margin: 8px 0;"><strong>Status:</strong> <span style="color: ${SUCCESS_GREEN}; font-weight: bold;">COMPLETED</span></p>
+      <p style="margin: 8px 0;"><strong>Processed Date:</strong> ${new Date().toLocaleDateString()}</p>
+    </div>
+    <p style="font-size: 14px; color: #999; line-height: 1.8;">
+      <strong>Note:</strong> Processing times may vary depending on the payment method and network conditions. For crypto withdrawals, confirmations may take 10-60 minutes.
+    </p>
+    <p style="font-size: 16px; margin-top: 25px; color: #333;">Thank you for choosing Asset Development!</p>
+    <p style="font-size: 16px; font-weight: 600; color: ${PRIMARY_BLUE}; margin: 0;">Asset Development Team.</p>
+  `;
+  return baseEmailTemplate("Withdrawal Approved", mainContent, SUCCESS_GREEN);
+};
+
+exports.depositApprovedEmail = (user, deposit) => {
+  const displayName = user.fullName || user.userName || "Valued User";
+  const mainContent = `
+    <h1 style="font-size: 24px; color: ${SUCCESS_GREEN}; margin-bottom: 20px;">Deposit Approved & Credited</h1>
+    <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Hi ${displayName},</p>
+    <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
+      Excellent! Your deposit has been approved and the funds have been credited to your account. You can now start investing and earning with Asset Development.
+    </p>
+    <div style="background-color: #e8f5e9; border-left: 4px solid ${SUCCESS_GREEN}; padding: 20px; margin: 20px 0; border-radius: 4px;">
+      <h3 style="color: ${SUCCESS_GREEN}; margin-top: 0;">Deposit Details:</h3>
+      <p style="margin: 8px 0;"><strong>Amount:</strong> $${deposit.amount.toFixed(2)}</p>
+      <p style="margin: 8px 0;"><strong>Method:</strong> ${deposit.coin}</p>
+      <p style="margin: 8px 0;"><strong>Equivalent Crypto:</strong> ${deposit.total ? deposit.total.toFixed(8) : 'N/A'}</p>
+      <p style="margin: 8px 0;"><strong>Status:</strong> <span style="color: ${SUCCESS_GREEN}; font-weight: bold;">COMPLETED</span></p>
+      <p style="margin: 8px 0;"><strong>Processed Date:</strong> ${new Date().toLocaleDateString()}</p>
+    </div>
+    <p style="font-size: 16px; margin-bottom: 15px; color: #333;">
+      Your updated account balance is now <strong>$${user.accountBalance.toFixed(2)}</strong>.
+    </p>
+    <p style="font-size: 14px; color: #999; line-height: 1.8;">
+      If you have any questions about your deposit or need assistance, please don't hesitate to contact our support team.
+    </p>
+    <p style="font-size: 16px; margin-top: 25px; color: #333;">Welcome to growing wealth with Asset Development!</p>
+    <p style="font-size: 16px; font-weight: 600; color: ${PRIMARY_BLUE}; margin: 0;">Asset Development Team.</p>
+  `;
+  return baseEmailTemplate("Deposit Approved", mainContent, SUCCESS_GREEN);
+};
+
+exports.depositRequestEmail = (user, deposit) => {
+  const displayName = user.fullName || user.userName || "Valued User";
+  const mainContent = `
+    <h1 style="font-size: 24px; color: #002611; margin-bottom: 20px;">Deposit Request Submitted</h1>
+    <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Hi ${displayName},</p>
+    <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
+      Your deposit request has been successfully submitted and is currently under review. Our team will process your deposit within 24-48 hours.
+    </p>
+    <div style="background-color: #f9f9f9; border-left: 4px solid ${PRIMARY_BLUE}; padding: 20px; margin: 20px 0; border-radius: 4px;">
+      <h3 style="color: #002611; margin-top: 0;">Deposit Details:</h3>
+      <p style="margin: 8px 0;"><strong>Amount:</strong> $${deposit.amount.toFixed(2)}</p>
+      <p style="margin: 8px 0;"><strong>Method:</strong> ${deposit.coin}</p>
+      <p style="margin: 8px 0;"><strong>Equivalent Crypto:</strong> ${deposit.total ? deposit.total.toFixed(8) : 'N/A'}</p>
+      <p style="margin: 8px 0;"><strong>Status:</strong> <span style="color: ${WARNING_ORANGE}; font-weight: bold;">PENDING REVIEW</span></p>
+    </div>
+    <p style="font-size: 14px; color: #999; line-height: 1.8;">
+      <strong>Important:</strong> Please ensure you send the exact amount to the provided wallet address. Deposits below the minimum amount or incorrect amounts may result in processing delays.
+    </p>
+    <p style="font-size: 14px; color: #999; margin-top: 15px;">
+      You will receive a confirmation email once your deposit is approved and credited to your account. If you have any questions, please contact our support team.
+    </p>
+    <p style="font-size: 16px; margin-top: 25px; color: #333;">Regards,</p>
+    <p style="font-size: 16px; font-weight: 600; color: ${PRIMARY_BLUE}; margin: 0;">Asset Development Team.</p>
+  `;
+  return baseEmailTemplate("Deposit Request Submitted", mainContent, WARNING_ORANGE);
+};

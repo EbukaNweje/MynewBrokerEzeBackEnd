@@ -2,6 +2,8 @@ const msgModel = require("../models/msgModel");
 const historyModel = require("../models/historyModel");
 const userModel = require("../models/User");
 const depositModel = require("../models/depositModel");
+const emailTemplate = require("../middleware/emailTemplate");
+const Brevo = require("@getbrevo/brevo");
 // const currencyapi = require('@everapi/currencyapi-js');
 require("dotenv").config();
 const axios = require("axios");
@@ -139,6 +141,32 @@ exports.deposit = async (req, res) => {
       msg: messageText,
     });
     await message.save();
+
+    // Send deposit request email
+    try {
+      const htmlContent = emailTemplate.depositRequestEmail(depositor, deposit);
+
+      const apiInstance = new Brevo.TransactionalEmailsApi();
+      apiInstance.setApiKey(
+        Brevo.TransactionalEmailsApiApiKeys.apiKey,
+        process.env.BREVO_API_KEY,
+      );
+
+      const sendSmtpEmail = new Brevo.SendSmtpEmail();
+      sendSmtpEmail.subject = "Deposit Request Submitted";
+      sendSmtpEmail.to = [{ email: depositor.email }];
+      sendSmtpEmail.sender = {
+        name: "Asset Development",
+        email: process.env.BREVO_USER,
+      };
+      sendSmtpEmail.htmlContent = htmlContent;
+
+      await apiInstance.sendTransacEmail(sendSmtpEmail);
+      console.log("Deposit request email sent successfully");
+    } catch (emailError) {
+      console.error("Error sending deposit request email:", emailError);
+      // Don't fail the deposit if email fails
+    }
 
     return res.status(201).json({
       message: "Deposit created and pending",

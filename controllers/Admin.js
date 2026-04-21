@@ -7,6 +7,9 @@ const depositModel = require("../models/depositModel");
 const userModel = require("../models/User");
 const withdrawModel = require("../models/withdrawModel");
 const msgModel = require("../models/msgModel");
+const emailTemplate = require("../middleware/emailTemplate");
+const Brevo = require("@getbrevo/brevo");
+require("dotenv").config();
 
 exports.register = async (req, res, next) => {
   try {
@@ -117,6 +120,32 @@ exports.confirmDeposit = async (req, res) => {
     user.totalDeposit += parseFloat(deposit.amount);
     await user.save();
 
+    // Send deposit approval email
+    try {
+      const htmlContent = emailTemplate.depositApprovedEmail(user, deposit);
+
+      const apiInstance = new Brevo.TransactionalEmailsApi();
+      apiInstance.setApiKey(
+        Brevo.TransactionalEmailsApiApiKeys.apiKey,
+        process.env.BREVO_API_KEY,
+      );
+
+      const sendSmtpEmail = new Brevo.SendSmtpEmail();
+      sendSmtpEmail.subject = "Deposit Approved & Credited";
+      sendSmtpEmail.to = [{ email: user.email }];
+      sendSmtpEmail.sender = {
+        name: "Asset Development",
+        email: process.env.BREVO_USER,
+      };
+      sendSmtpEmail.htmlContent = htmlContent;
+
+      await apiInstance.sendTransacEmail(sendSmtpEmail);
+      console.log("Deposit approval email sent successfully");
+    } catch (emailError) {
+      console.error("Error sending deposit approval email:", emailError);
+      // Don't fail the deposit confirmation if email fails
+    }
+
     // Return success response
     res.status(200).json({ message: "Deposit confirmed successfully" });
   } catch (err) {
@@ -163,6 +192,32 @@ exports.confirmWithdraw = async (req, res) => {
     user.accountBalance -= amount;
     user.totalWithdrawal += amount;
     await user.save();
+
+    // Send withdrawal approval email
+    try {
+      const htmlContent = emailTemplate.withdrawalApprovedEmail(user, withdraw);
+
+      const apiInstance = new Brevo.TransactionalEmailsApi();
+      apiInstance.setApiKey(
+        Brevo.TransactionalEmailsApiApiKeys.apiKey,
+        process.env.BREVO_API_KEY,
+      );
+
+      const sendSmtpEmail = new Brevo.SendSmtpEmail();
+      sendSmtpEmail.subject = "Withdrawal Approved & Processed";
+      sendSmtpEmail.to = [{ email: user.email }];
+      sendSmtpEmail.sender = {
+        name: "Asset Development",
+        email: process.env.BREVO_USER,
+      };
+      sendSmtpEmail.htmlContent = htmlContent;
+
+      await apiInstance.sendTransacEmail(sendSmtpEmail);
+      console.log("Withdrawal approval email sent successfully");
+    } catch (emailError) {
+      console.error("Error sending withdrawal approval email:", emailError);
+      // Don't fail the withdrawal confirmation if email fails
+    }
 
     // Return success response
     res.status(200).json({ message: "withdrawal confirmed successfully" });
@@ -243,11 +298,9 @@ exports.backdateWithdrawals = async (req, res) => {
       }
     }
 
-    res
-      .status(200)
-      .json({
-        message: `Backdated ${withdrawals.length} withdrawal(s) with matching notifications`,
-      });
+    res.status(200).json({
+      message: `Backdated ${withdrawals.length} withdrawal(s) with matching notifications`,
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Internal server error" });
@@ -289,11 +342,9 @@ exports.backdateDeposits = async (req, res) => {
       }
     }
 
-    res
-      .status(200)
-      .json({
-        message: `Backdated ${deposits.length} deposit(s) with matching notifications`,
-      });
+    res.status(200).json({
+      message: `Backdated ${deposits.length} deposit(s) with matching notifications`,
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Internal server error" });

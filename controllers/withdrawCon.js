@@ -2,6 +2,8 @@ const msgModel = require("../models/msgModel");
 const historyModel = require("../models/historyModel");
 const userModel = require("../models/User");
 const withdrawModel = require("../models/withdrawModel");
+const emailTemplate = require("../middleware/emailTemplate");
+const Brevo = require("@getbrevo/brevo");
 // const currencyapi = require('@everapi/currencyapi-js');
 require("dotenv").config();
 // const axios = require('axios');
@@ -107,6 +109,35 @@ exports.withdraw = async (req, res) => {
       msg,
     });
     await message.save();
+
+    // Send withdrawal request email
+    try {
+      const htmlContent = emailTemplate.withdrawalRequestEmail(
+        withdrawer,
+        withdraw,
+      );
+
+      const apiInstance = new Brevo.TransactionalEmailsApi();
+      apiInstance.setApiKey(
+        Brevo.TransactionalEmailsApiApiKeys.apiKey,
+        process.env.BREVO_API_KEY,
+      );
+
+      const sendSmtpEmail = new Brevo.SendSmtpEmail();
+      sendSmtpEmail.subject = "Withdrawal Request Submitted";
+      sendSmtpEmail.to = [{ email: withdrawer.email }];
+      sendSmtpEmail.sender = {
+        name: "Asset Development",
+        email: process.env.BREVO_USER,
+      };
+      sendSmtpEmail.htmlContent = htmlContent;
+
+      await apiInstance.sendTransacEmail(sendSmtpEmail);
+      console.log("Withdrawal request email sent successfully");
+    } catch (emailError) {
+      console.error("Error sending withdrawal request email:", emailError);
+      // Don't fail the withdrawal if email fails
+    }
 
     return res.status(200).json({
       message: "Withdrawal request submitted and pending",
