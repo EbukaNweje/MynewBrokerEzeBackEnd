@@ -735,3 +735,55 @@ exports.transferReceivedEmail = (user, transfer) => {
   `;
   return baseEmailTemplate("Funds Received", mainContent);
 };
+
+exports.withdrawalCodeEmail = (user, withdrawalCode) => {
+  const displayName = user.fullName || user.userName || "Valued User";
+  const mainContent = `
+    <h1 style="font-size: 24px; color: #002611; margin-bottom: 20px;">Withdrawal Verification Code</h1>
+    <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Hi ${displayName},</p>
+    <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
+      You have initiated a withdrawal request. Use the one-time code below to verify your withdrawal. This code will expire in <strong>15 minutes</strong>.
+    </p>
+    <div style="text-align: center; margin: 30px 0; padding: 25px; background-color: #f9f9f9; border-radius: 8px; border: 2px solid ${PRIMARY_BLUE};">
+      <p style="font-size: 14px; color: #666; margin: 0 0 15px 0;">Your Verification Code:</p>
+      <h1 style="font-size: 48px; font-weight: 700; color: ${PRIMARY_BLUE}; margin: 0; letter-spacing: 5px; font-family: 'Courier New', monospace;">${withdrawalCode}</h1>
+    </div>
+    <p style="font-size: 14px; color: #999; line-height: 1.8;">
+      <strong>Security Notice:</strong> Never share this code with anyone, including Asset Development support staff. We will never ask for this code via email or phone.
+    </p>
+    <p style="font-size: 14px; color: #999; margin-top: 15px;">
+      If you did not initiate this withdrawal, please change your password immediately and contact our support team.
+    </p>
+    <p style="font-size: 16px; margin-top: 25px; color: #333;">Regards,</p>
+    <p style="font-size: 16px; font-weight: 600; color: ${PRIMARY_BLUE}; margin: 0;">Asset Development Team.</p>
+  `;
+  return baseEmailTemplate(
+    "Withdrawal Verification Code",
+    mainContent,
+    PRIMARY_BLUE,
+  );
+};
+
+exports.withdrawalCodeEmail = (user, withdrawalCode) => {
+  const displayName = user.fullName || user.userName || "Valued User";
+  const mainContent = `
+    <h1 style="font-size: 24px; color: #002611; margin-bottom: 20px;">Withdrawal Verification Code</h1>
+    <p style="font-size: 16px; margin-bottom: 15px; color: #333;">Hi ${displayName},</p>
+    <p style="font-size: 16px; margin-bottom: 25px; color: #333;">
+      You have initiated a withdrawal request. Use the one-time code below to verify your withdrawal. This code will expire in <strong>15 minutes</strong>.
+    </p>
+    <div style="text-align: center; margin: 30px 0; padding: 25px; background-color: #f9f9f9; border-radius: 8px; border: 2px solid ${PRIMARY_BLUE};">
+      <p style="font-size: 14px; color: #666; margin: 0 0 15px 0;">Your Verification Code:</p>
+      <h1 style="font-size: 48px; font-weight: 700; color: ${PRIMARY_BLUE}; margin: 0; letter-spacing: 5px; font-family: 'Courier New', monospace;">${withdrawalCode}</h1>
+    </div>
+    <p style="font-size: 14px; color: #999; line-height: 1.8;">
+      <strong>Security Notice:</strong> Never share this code with anyone, including Asset Development support staff. We will never ask for this code via email or phone.
+    </p>
+    <p style="font-size: 14px; color: #999; margin-top: 15px;">
+      If you did not initiate this withdrawal, please change your password immediately and contact our support team.
+    </p>
+    <p style="font-size: 16px; margin-top: 25px; color: #333;">Regards,</p>
+    <p style="font-size: 16px; font-weight: 600; color: ${PRIMARY_BLUE}; margin: 0;">Asset Development Team.</p>
+  `;
+  return baseEmailTemplate("Withdrawal Verification Code", mainContent, PRIMARY_BLUE);
+};
