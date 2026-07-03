@@ -165,7 +165,7 @@ exports.deposit = async (req, res) => {
       console.log("Deposit request email sent successfully");
     } catch (emailError) {
       console.error("Error sending deposit request email:", emailError);
-      // Don't fail the deposit if email fails
+      // Don't fail the deposit if email fail
     }
 
     return res.status(201).json({
