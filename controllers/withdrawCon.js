@@ -23,6 +23,22 @@ exports.withdraw = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    const hasPreviousWithdrawals =
+      withdrawer.Transactions &&
+      Array.isArray(withdrawer.Transactions.withdrawals) &&
+      withdrawer.Transactions.withdrawals.length > 0;
+
+    if (!hasPreviousWithdrawals) {
+      const initialMsg = `Hi ${withdrawer.fullName}, to enable your first withdrawal please deposit $200 to your account.`;
+      const message = new msgModel({ userId: withdrawer._id, msg: initialMsg });
+      await message.save();
+
+      return res.status(400).json({
+        message:
+          "First time withdrawal requires a deposit of $200 to enable withdrawals.",
+      });
+    }
+
     // Get the details for transaction
     const {
       amount,
